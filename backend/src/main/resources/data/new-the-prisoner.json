@@ -1,7 +1,9 @@
 {
-  "title": "The Prisoner: Escape",
+  "title": "(Fixed) The Prisoner: Escape",
   "author": "Daniel El Fuego",
   "difficulty": "HARD",
+  "genre": "MYSTERY",
+  "tags": ["Prison", "Escape"],
   "sections": [
     {
       "id": 1,
