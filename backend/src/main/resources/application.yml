@@ -7,3 +7,6 @@ spring:
     password: ${DB_PASSWORD}
 server:
   port: ${PORT:8081}
+app:
+  books:
+    seed-location: ${SEED_LOCATION:classpath:data/*.json}

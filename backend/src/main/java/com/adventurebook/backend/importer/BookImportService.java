@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -37,14 +38,17 @@ public class BookImportService implements ApplicationRunner {
 
         for (Resource resource : resources) {
             String filename = resource.getFilename();
-            String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            String content;
+            try (InputStream in = resource.getInputStream()) {
+                content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
 
             ParseResult res = validator.validate(content);
             if (res.isValid()) {
-                log.info(res.book().toString());
+                log.info("{}: {}", filename, res.book());
             } else {
                 for (ValidationError err : res.errors()) {
-                    log.error("{}: {}", err.type(), err.message());
+                    log.error("{}: {}: {}", filename, err.type(), err.message());
                 }
             }
         }
