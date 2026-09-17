@@ -282,7 +282,7 @@ class BookValidatorTest {
             ParseResult result = validator.validate(read("new-the-prisoner.json"));
 
             assertThat(result.isValid()).isTrue();
-            assertThat(result.book().title()).isEqualTo("The Prisoner: Escape");
+            assertThat(result.book().title()).isEqualTo("(Fixed) The Prisoner: Escape");
         }
 
         @Test

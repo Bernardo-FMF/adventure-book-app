@@ -1,6 +1,5 @@
 package com.adventurebook.backend.persistence;
 
-import com.adventurebook.backend.persistence.types.ConsequenceType;
 import jakarta.persistence.*;
 
 @Entity
@@ -29,16 +28,19 @@ public class OptionEntity {
     protected OptionEntity() {
     }
 
-    OptionEntity(SectionEntity section, String description, String gotoRef, int position) {
-        this.section = section;
+    public OptionEntity(String description, String gotoRef) {
         this.description = description;
         this.gotoRef = gotoRef;
-        this.position = position;
     }
 
-    public ConsequenceEntity setConsequence(ConsequenceType type, int amount, String text) {
-        this.consequence = new ConsequenceEntity(this, type, amount, text);
-        return consequence;
+    public void setConsequence(ConsequenceEntity consequence) {
+        consequence.assignTo(this);
+        this.consequence = consequence;
+    }
+
+    void assignTo(SectionEntity section, int position) {
+        this.section = section;
+        this.position = position;
     }
 
     public Long getId() {

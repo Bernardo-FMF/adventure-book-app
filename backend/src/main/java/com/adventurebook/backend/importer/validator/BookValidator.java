@@ -6,6 +6,9 @@ import com.adventurebook.backend.importer.dto.OptionDto;
 import com.adventurebook.backend.importer.dto.SectionDto;
 import org.springframework.stereotype.Component;
 
+import static com.adventurebook.backend.utils.StringUtils.blankToNull;
+import static com.adventurebook.backend.utils.StringUtils.upperCaseOrNull;
+
 import java.util.*;
 
 @Component
@@ -58,12 +61,13 @@ public class BookValidator {
         boolean bookHasEnd = false;
 
         for (SectionDto section : sections) {
-            String id = normalizeId(section.id());
+            // Ids in the seed data are either strings or numeric values. Numeric values are already turned into strings by Jackson.
+            String id = blankToNull(section.id());
             if (Objects.isNull(id)) {
                 continue;
             }
 
-            String type = normalizeType(section.type());
+            String type = upperCaseOrNull(section.type());
             boolean ending = isEnding(type);
 
             // In the case of duplicate section ids, store only its first appearance, and record an error.
@@ -102,7 +106,7 @@ public class BookValidator {
             // Rule 4: a non-ending section with no options is invalid.
             // This rule is enforced strictly, ignoring reachability. this means that even if this section isn't reachable from
             // other sections, it's still invalid.
-            if (!isEnding(normalizeType(section.type())) && targets.isEmpty()) {
+            if (!isEnding(upperCaseOrNull(section.type())) && targets.isEmpty()) {
                 errors.add(ValidationError.of(ValidationErrorType.DEAD_END_NODE, "Non-ending section '" + section.id() + "' has no options"));
             }
 
@@ -130,7 +134,7 @@ public class BookValidator {
         List<String> targets = new ArrayList<>(options.size());
         for (OptionDto option : options) {
             if (Objects.nonNull(option)) {
-                targets.add(normalizeId(option.gotoId()));
+                targets.add(blankToNull(option.gotoId()));
             }
         }
         return targets;
@@ -142,19 +146,5 @@ public class BookValidator {
 
     private boolean isBegin(String type) {
         return "BEGIN".equals(type);
-    }
-
-    private String normalizeType(String type) {
-        return Objects.isNull(type) ? null : type.trim().toUpperCase(Locale.ROOT);
-    }
-
-    // Ids in the seed data are either strings or numeric values. Numeric values are already turned into strings by Jackson.
-    // Normalizing an id in this context means we only need to handle padding and blank ids.
-    private String normalizeId(String id) {
-        if (Objects.isNull(id)) {
-            return null;
-        }
-        String trimmed = id.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

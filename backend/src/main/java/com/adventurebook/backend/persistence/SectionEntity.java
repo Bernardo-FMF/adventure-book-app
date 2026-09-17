@@ -34,17 +34,20 @@ public class SectionEntity {
     protected SectionEntity() {
     }
 
-    SectionEntity(BookEntity book, String sectionRef, SectionType type, String text) {
-        this.book = book;
+    public SectionEntity(String sectionRef, SectionType type, String text) {
         this.sectionRef = sectionRef;
         this.type = type;
         this.text = text;
     }
 
-    public OptionEntity addOption(String description, String gotoRef) {
-        OptionEntity option = new OptionEntity(this, description, gotoRef, options.size());
+    // The position is the order the option was added in, which corresponds to how many options have been inserted.
+    public void addOption(OptionEntity option) {
+        option.assignTo(this, options.size());
         options.add(option);
-        return option;
+    }
+
+    void assignTo(BookEntity book) {
+        this.book = book;
     }
 
     public Long getId() {

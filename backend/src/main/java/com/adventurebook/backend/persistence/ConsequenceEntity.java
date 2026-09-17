@@ -27,11 +27,14 @@ public class ConsequenceEntity {
     protected ConsequenceEntity() {
     }
 
-    ConsequenceEntity(OptionEntity option, ConsequenceType type, int amount, String text) {
-        this.option = option;
+    public ConsequenceEntity(ConsequenceType type, int amount, String text) {
         this.type = type;
         this.amount = amount;
         this.text = text;
+    }
+
+    void assignTo(OptionEntity option) {
+        this.option = option;
     }
 
     public Long getId() {

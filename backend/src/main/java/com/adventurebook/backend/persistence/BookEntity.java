@@ -2,7 +2,6 @@ package com.adventurebook.backend.persistence;
 
 import com.adventurebook.backend.persistence.types.Difficulty;
 import com.adventurebook.backend.persistence.types.Genre;
-import com.adventurebook.backend.persistence.types.SectionType;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -53,10 +52,9 @@ public class BookEntity {
         this.title = title;
     }
 
-    public SectionEntity addSection(String sectionRef, SectionType type, String text) {
-        SectionEntity section = new SectionEntity(this, sectionRef, type, text);
+    public void addSection(SectionEntity section) {
+        section.assignTo(this);
         sections.add(section);
-        return section;
     }
 
     public Long getId() {
