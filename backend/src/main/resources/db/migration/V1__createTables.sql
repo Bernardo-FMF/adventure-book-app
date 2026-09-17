@@ -27,7 +27,6 @@ CREATE TABLE section (
     section_ref     VARCHAR(40)     NOT NULL,
     type            VARCHAR(6)      NOT NULL,
     text            TEXT            NOT NULL,
-    pos             INTEGER         NOT NULL,
 
     CONSTRAINT pk_section PRIMARY KEY (id),
     CONSTRAINT fk_book FOREIGN KEY (book_id) REFERENCES book(id) ON DELETE CASCADE,
