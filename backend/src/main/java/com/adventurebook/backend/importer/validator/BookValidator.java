@@ -148,12 +148,13 @@ public class BookValidator {
         return Objects.isNull(type) ? null : type.trim().toUpperCase(Locale.ROOT);
     }
 
-    // Section ids and goto targets are numbers in some books and strings in others, so we can normalize to string to maintain consistency.
-    private String normalizeId(Object id) {
-        if (id == null) {
+    // Ids in the seed data are either strings or numeric values. Numeric values are already turned into strings by Jackson.
+    // Normalizing an id in this context means we only need to handle padding and blank ids.
+    private String normalizeId(String id) {
+        if (Objects.isNull(id)) {
             return null;
         }
-        String idStr = String.valueOf(id).trim();
-        return idStr.isEmpty() ? null : idStr;
+        String trimmed = id.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

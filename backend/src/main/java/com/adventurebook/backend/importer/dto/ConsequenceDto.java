@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ConsequenceDto(
         String type,
-        Object amount,
+        Integer value,
         String text
 ) {
 }

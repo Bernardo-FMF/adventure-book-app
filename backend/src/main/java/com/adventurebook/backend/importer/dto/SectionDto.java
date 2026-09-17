@@ -6,7 +6,7 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SectionDto(
-        Object id,
+        String id,
         String text,
         String type,
         List<OptionDto> options
