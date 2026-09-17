@@ -2,7 +2,8 @@ package com.adventurebook.backend.repository;
 
 import com.adventurebook.backend.persistence.BookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface BookRepository extends JpaRepository<BookEntity, Long> {
+public interface BookRepository extends JpaRepository<BookEntity, Long>, JpaSpecificationExecutor<BookEntity> {
     boolean existsBySlug(String slug);
 }

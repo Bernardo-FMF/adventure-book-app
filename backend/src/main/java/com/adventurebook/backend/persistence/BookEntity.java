@@ -3,6 +3,7 @@ package com.adventurebook.backend.persistence;
 import com.adventurebook.backend.persistence.types.Difficulty;
 import com.adventurebook.backend.persistence.types.Genre;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -33,6 +34,7 @@ public class BookEntity {
     @Column(name = "genre", length = 40)
     private Genre genre;
 
+    // TODO-4: this isn't being filled yet.
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
@@ -43,6 +45,11 @@ public class BookEntity {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SectionEntity> sections = new ArrayList<>();
+
+    // This is used to obtain a count of how many sections a book has without actually loading the collection,
+    // and just performing a lighter query that only obtains the count.
+    @Formula("(select count(*) from section s where s.book_id = id)")
+    private int sectionsCount;
 
     protected BookEntity() {
     }
@@ -107,5 +114,9 @@ public class BookEntity {
 
     public List<SectionEntity> getSections() {
         return sections;
+    }
+
+    public int getSectionsCount() {
+        return sectionsCount;
     }
 }
