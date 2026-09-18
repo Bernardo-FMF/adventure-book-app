@@ -16,7 +16,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-// TODO-6: add comment to explain why the use of specs
+/**
+ * Alternative to adding a method to the book repository {@link com.adventurebook.backend.repository.BookRepository}.
+ * If we added a method to the repository like findByTitleAndGenreInAndDifficultyIn, the query would be derived from
+ * the method name meaning that none of the parameters can be optional.
+ * With specifications, we can have fine-grained control into how the query is created at runtime, so we can add only the
+ * predicates for filters that are defined.
+ */
 public class BookFilterSpec implements Specification<BookEntity> {
     private final String query;
     private final List<Difficulty> difficulties;

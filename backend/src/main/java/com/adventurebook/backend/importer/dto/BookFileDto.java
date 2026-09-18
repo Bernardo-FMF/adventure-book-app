@@ -10,6 +10,7 @@ public record BookFileDto(
         String author,
         String difficulty,
         String genre,
+        String description,
         List<String> tags,
         List<SectionDto> sections
 ) {

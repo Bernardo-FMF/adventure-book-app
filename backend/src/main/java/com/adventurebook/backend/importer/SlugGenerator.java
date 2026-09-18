@@ -2,18 +2,23 @@ package com.adventurebook.backend.importer;
 
 import org.springframework.stereotype.Component;
 
+import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.adventurebook.backend.utils.StringUtils.blankToNull;
+
 @Component
 public class SlugGenerator {
-    // TODO-3: Consider that for example new-the-prisoner title has "(Fixed)", which should be mapped to "fixed"
     public String slugFrom(String title) {
-        if (Objects.isNull(title)) {
+        String normalized = blankToNull(title);
+        if (Objects.isNull(normalized)) {
             return "";
         }
 
-        return title.toLowerCase(Locale.ROOT)
+        return Normalizer.normalize(normalized, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]+", "-")
                 .replaceAll("(^-+|-+$)", "");
     }

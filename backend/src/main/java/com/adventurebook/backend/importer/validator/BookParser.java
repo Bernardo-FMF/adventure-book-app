@@ -9,9 +9,13 @@ import java.util.Objects;
 
 @Component
 public class BookParser {
-    //TODO-1: do i need to put this bean on a config class
-    //TODO-2: do i need to set the fail on unknown properties to false?
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public BookParser(
+            ObjectMapper mapper
+    ) {
+        this.mapper = mapper;
+    }
 
     public BookFileDto parse(String json) {
         if (Objects.isNull(json) || json.isBlank()) {

@@ -35,6 +35,7 @@ public class BookMapper {
         entity.setAuthor(blankToNull(book.author()));
         entity.setDifficulty(optionalEnum(Difficulty.class, book.difficulty(), "difficulty"));
         entity.setGenre(optionalEnum(Genre.class, book.genre(), "genre"));
+        entity.setDescription(blankToNull(book.description()));
 
         if (Objects.nonNull(book.tags())) {
             List<String> tags = new ArrayList<>();

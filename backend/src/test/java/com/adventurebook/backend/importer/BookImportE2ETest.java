@@ -1,5 +1,6 @@
 package com.adventurebook.backend.importer;
 
+import com.adventurebook.backend.persistence.types.Genre;
 import com.adventurebook.backend.response.BookDto;
 import com.adventurebook.backend.response.BookListDto;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
@@ -37,5 +38,7 @@ class BookImportE2ETest extends PostgresIntegrationTest {
         assertThat(book.author()).isEqualTo("Daniel El Fuego");
         assertThat(book.tags()).containsExactly("Escape", "Prison");
         assertThat(book.sectionsCount()).isEqualTo(5);
+        assertThat(book.description()).startsWith("Locked in a windowless cell");
+        assertThat(book.genre()).isEqualTo(Genre.MYSTERY);
     }
 }

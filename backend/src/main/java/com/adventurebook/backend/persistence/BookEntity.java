@@ -3,6 +3,7 @@ package com.adventurebook.backend.persistence;
 import com.adventurebook.backend.persistence.types.Difficulty;
 import com.adventurebook.backend.persistence.types.Genre;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Formula;
 
 import java.util.ArrayList;
@@ -34,11 +35,14 @@ public class BookEntity {
     @Column(name = "genre", length = 40)
     private Genre genre;
 
-    // TODO-4: this isn't being filled yet.
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    // Tags are lazy loaded, so when we access tags for each individual book we'd be performing a query for each.
+    // Making the tags lazy and with a batch size, when we first access the tags of a book, we'll perform a batch fetch
+    // for the tags of N books (N = 10).
     @ElementCollection(fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
     @CollectionTable(name = "book_tag", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "tag", nullable = false, length = 40)
     private Set<String> tags = new LinkedHashSet<>();

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BookValidatorTest {
-    private final BookValidator validator = new BookValidator(new BookParser());
+    private final BookValidator validator = new BookValidator(new BookParser(new ObjectMapper()));
 
     private static String book(String... sections) {
         return """
