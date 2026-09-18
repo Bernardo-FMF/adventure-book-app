@@ -1,0 +1,12 @@
+name: adventure-book-app
+
+services:
+  auth-db:
+    image: postgres:16
+    container_name: adventure-book-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=adventureBooks
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
