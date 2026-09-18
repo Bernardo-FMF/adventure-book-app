@@ -1,0 +1,42 @@
+<article class="flex h-full flex-col gap-4 rounded-xl bg-card p-5 ring-1 ring-ink/10">
+  <header>
+    <h3 class="font-display text-xl font-bold text-ink">{{ book().title }}</h3>
+    @if (book().author) {
+      <p class="mt-1 text-sm text-ink-faint">by {{ book().author }}</p>
+    }
+  </header>
+
+  @if (book().description) {
+    <p class="text-sm leading-relaxed text-ink-soft">{{ book().description }}</p>
+  }
+
+  <div class="flex flex-wrap gap-2">
+    @if (book().difficulty; as difficulty) {
+      <ab-badge [tone]="tone(difficulty)">{{ label(difficulty) }}</ab-badge>
+    }
+    @if (book().genre; as genre) {
+      <ab-badge>{{ label(genre) }}</ab-badge>
+    }
+  </div>
+
+  <p class="flex items-center gap-1.5 text-sm text-ink-faint">
+    <ng-icon name="phosphorBookOpenLight" aria-hidden="true" />
+    {{ book().sectionsCount }} chapters
+  </p>
+
+  @if (book().tags.length) {
+    <ul class="flex flex-wrap gap-2">
+      @for (tag of book().tags; track tag) {
+        <li><ab-badge tone="tag">{{ tag }}</ab-badge></li>
+      }
+    </ul>
+  }
+
+  <a
+    [routerLink]="['/books', book().slug]"
+    class="mt-auto flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-4 py-2.5 font-semibold text-white transition hover:bg-gold-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600"
+  >
+    <ng-icon name="phosphorStarLight" aria-hidden="true" />
+    Begin Quest
+  </a>
+</article>

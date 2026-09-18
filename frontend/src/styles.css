@@ -7,8 +7,29 @@
   --color-parchment: #faf7f2;
 
   --font-display: Georgia, 'Times New Roman', serif;
+
+  --color-parchment-dim: #f3ece1;
+  --color-card: #fffdfa;
+
+  --color-ink: #3b2a20;
+  --color-ink-soft: #6b5544;
+  --color-ink-faint: #9a8875;
+
+  --color-gold-500: #c8931a;
+  --color-gold-600: #a97a12;
+
+  --color-tag-bg: #f0efed;
+  --color-tag-fg: #57534e;
+
+  --color-easy-bg: #e6f4ea;
+  --color-easy-fg: #2c6b42;
+  --color-medium-bg: #fdf3d7;
+  --color-medium-fg: #8a6210;
+  --color-hard-bg: #fdeaea;
+  --color-hard-fg: #a33a3a;
 }
 
 body {
-  background: var(--color-parchment);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
 }

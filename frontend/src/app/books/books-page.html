@@ -1,1 +1,30 @@
 <ab-hero-banner [bookCount]="bookCount()" />
+
+<section class="mx-auto max-w-6xl px-6 py-12">
+  <header class="text-center">
+    <h2 class="flex items-center justify-center gap-3 font-display text-3xl font-bold text-ink">
+      <ng-icon name="phosphorBooksLight" class="text-gold-500" aria-hidden="true" />
+      The Adventure Library
+    </h2>
+    <p class="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+      Choose your next adventure from our collection of interactive tales. Each book offers unique
+      paths and multiple endings based on your choices.
+    </p>
+  </header>
+
+  @if (failed()) {
+    <p class="mt-12 text-center text-hard-fg" role="alert">
+      The library could not be reached. Please try again.
+    </p>
+  } @else if (loading()) {
+    <p class="mt-12 text-center text-ink-faint" aria-live="polite">Gathering adventures…</p>
+  } @else if (!books().length) {
+    <p class="mt-12 text-center text-ink-faint">No adventures found.</p>
+  } @else {
+    <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      @for (book of books(); track book.slug) {
+        <li><ab-book-card [book]="book" /></li>
+      }
+    </ul>
+  }
+</section>

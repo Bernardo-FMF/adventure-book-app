@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BookList, BookQuery, Metadata } from './book.models';
 
@@ -11,11 +11,11 @@ export class BookApi {
   getBooks(query: BookQuery): Observable<BookList> {
     let params = new HttpParams();
 
-    if (query.page) {
+    if (query.page !== undefined) {
       params = params.set('page', query.page);
     }
 
-    if (query.size) {
+    if (query.size !== undefined) {
       params = params.set('size', query.size);
     }
 
