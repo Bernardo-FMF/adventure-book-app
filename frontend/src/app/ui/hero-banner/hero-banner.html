@@ -1,0 +1,23 @@
+<section
+  class="bg-[radial-gradient(ellipse_at_center,var(--color-hero-light)_0%,var(--color-hero)_70%)] px-6 py-16 text-center sm:py-20">
+  <h1
+    class="flex items-center justify-center gap-4 font-display text-4xl font-bold tracking-tight text-gold-400 sm:text-5xl lg:text-6xl"
+  >
+    <ng-icon name="phosphorSparkleLight" aria-hidden="true" />
+    Adventure Awaits
+    <ng-icon name="phosphorSparkleLight" aria-hidden="true" />
+  </h1>
+
+  <p class="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-parchment/85 sm:text-lg">
+    Embark on epic quests where every choice shapes your destiny. Explore mystical realms, solve ancient mysteries, and
+    become the hero of your own story.
+  </p>
+
+  @if (bookCount() !== null) {
+    <p class="mt-7 flex items-center justify-center gap-2 text-sm font-semibold text-parchment">
+      <ng-icon name="phosphorBookOpenLight" class="text-gold-400" aria-hidden="true" />
+      {{ bookCount() }} Epic Adventures Available
+      <ng-icon name="phosphorSparkleLight" class="text-gold-400" aria-hidden="true" />
+    </p>
+  }
+</section>
