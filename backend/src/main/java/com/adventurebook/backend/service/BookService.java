@@ -7,6 +7,7 @@ import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.repository.spec.BookFilterSpec;
 import com.adventurebook.backend.response.BookDto;
 import com.adventurebook.backend.response.BookListDto;
+import com.adventurebook.backend.response.MetadataDto;
 import com.adventurebook.backend.response.PaginationDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -59,6 +60,10 @@ public class BookService {
                 page.getContent().stream().map(this::mapBook).toList(),
                 new PaginationDto(page.getTotalPages(), page.getNumber(), page.getTotalElements())
         );
+    }
+
+    public MetadataDto getMetadata() {
+        return new MetadataDto(bookRepository.count());
     }
 
     private BookDto mapBook(BookEntity entity) {

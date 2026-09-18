@@ -3,6 +3,7 @@ package com.adventurebook.backend.controller;
 import com.adventurebook.backend.persistence.types.Difficulty;
 import com.adventurebook.backend.persistence.types.Genre;
 import com.adventurebook.backend.response.BookListDto;
+import com.adventurebook.backend.response.MetadataDto;
 import com.adventurebook.backend.service.BookService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -32,5 +33,10 @@ public class BookController {
             @PageableDefault Pageable pageable
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.getBooks(query, difficulties, genres, pageable));
+    }
+
+    @GetMapping("/metadata")
+    public ResponseEntity<MetadataDto> getMetadata() {
+        return ResponseEntity.status(HttpStatus.OK).body(bookService.getMetadata());
     }
 }
