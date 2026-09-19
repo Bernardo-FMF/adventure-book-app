@@ -1,6 +1,7 @@
 package com.adventurebook.backend.service;
 
 import com.adventurebook.backend.exception.BookNotFoundException;
+import com.adventurebook.backend.exception.GameSessionNotFoundException;
 import com.adventurebook.backend.exception.MissingSectionException;
 import com.adventurebook.backend.persistence.BookEntity;
 import com.adventurebook.backend.persistence.ConsequenceEntity;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class GameService {
@@ -39,6 +41,14 @@ public class GameService {
 
         GameSessionEntity game = gameRepository.save(new GameSessionEntity(book, beginningSection));
         return mapGameState(game, null);
+    }
+
+    @Transactional(readOnly = true)
+    public GameStateDto get(UUID gameId) {
+        GameSessionEntity game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new GameSessionNotFoundException("Game with id " + gameId + " not found"));
+
+        return mapGameState(game, game.getLastConsequence());
     }
 
     private GameStateDto mapGameState(GameSessionEntity game, ConsequenceEntity lastConsequence) {

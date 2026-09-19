@@ -7,7 +7,6 @@ import com.adventurebook.backend.response.MetadataDto;
 import com.adventurebook.backend.service.BookService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,11 +31,11 @@ public class BookController {
             @RequestParam(name = "genre", required = false) List<Genre> genres,
             @PageableDefault Pageable pageable
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(bookService.getBooks(query, difficulties, genres, pageable));
+        return ResponseEntity.ok(bookService.getBooks(query, difficulties, genres, pageable));
     }
 
     @GetMapping("/metadata")
     public ResponseEntity<MetadataDto> getMetadata() {
-        return ResponseEntity.status(HttpStatus.OK).body(bookService.getMetadata());
+        return ResponseEntity.ok(bookService.getMetadata());
     }
 }

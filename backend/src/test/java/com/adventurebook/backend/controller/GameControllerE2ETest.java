@@ -118,4 +118,24 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
     void rejectsUnknownBook() {
         startGame(bookId + 999).expectStatus().isNotFound();
     }
+
+    @Test
+    @DisplayName("a started game can be read back unchanged")
+    void readsBackTheGame() {
+        GameStateDto started = startGame(bookId)
+                .expectBody(GameStateDto.class).returnResult().getResponseBody();
+
+        GameStateDto fetched = client.get().uri("/api/games/" + started.id()).exchange()
+                .expectStatus().isOk()
+                .expectBody(GameStateDto.class)
+                .returnResult().getResponseBody();
+
+        assertThat(fetched).isNotNull();
+        assertThat(fetched.id()).isEqualTo(started.id());
+        assertThat(fetched.status()).isEqualTo(started.status());
+        assertThat(fetched.health()).isEqualTo(started.health());
+        assertThat(fetched.section().sectionRef()).isEqualTo(started.section().sectionRef());
+        assertThat(fetched.section().options()).hasSameSizeAs(started.section().options());
+    }
 }
+

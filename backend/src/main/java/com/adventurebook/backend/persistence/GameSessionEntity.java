@@ -86,6 +86,10 @@ public class GameSessionEntity {
         return status;
     }
 
+    public ConsequenceEntity getLastConsequence() {
+        return lastConsequence;
+    }
+
     public boolean isOver() {
         return status != GameStatus.IN_PROGRESS;
     }
