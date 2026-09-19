@@ -80,6 +80,7 @@ public class BookService {
 
     private BookDto mapBook(BookEntity entity) {
         return new BookDto(
+                entity.getId(),
                 entity.getSlug(),
                 entity.getTitle(),
                 entity.getAuthor(),

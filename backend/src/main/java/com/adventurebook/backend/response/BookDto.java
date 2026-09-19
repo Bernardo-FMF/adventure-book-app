@@ -6,6 +6,7 @@ import com.adventurebook.backend.persistence.types.Genre;
 import java.util.List;
 
 public record BookDto(
+        Long id,
         String slug,
         String title,
         String author,
