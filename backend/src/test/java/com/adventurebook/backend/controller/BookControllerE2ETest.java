@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         // Disable the importer by pointing to an invalid path
-        properties = "app.books.seed-location=classpath:no-seed-data/*.json"
+        properties = "app.books.seed-location=classpath*:no-seed-data/*.json"
 )
 class BookControllerE2ETest extends PostgresIntegrationTest {
     @LocalServerPort

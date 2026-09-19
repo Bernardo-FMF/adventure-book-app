@@ -1,0 +1,130 @@
+{
+  "title": "(Fixed) Dragon Quest",
+  "author": "Sage Moonshadow",
+  "difficulty": "MEDIUM",
+  "genre": "HIGH_FANTASY",
+  "description": "A dragon has claimed the pass above the village and no caravan has come through in a month. Climb to its lair and decide whether the beast is a monster to be slain or a neighbour to be bargained with.",
+  "tags": ["Dragons", "Mountains", "Bargains"],
+  "sections": [
+    {
+      "id": 1,
+      "text": "The village elder presses a cold iron key into your hand. 'The pass has been closed since the dragon came. Take the old road, or take the ridge. Either way, come back.'",
+      "type": "BEGIN",
+      "options": [
+        {
+          "description": "Take the old road through the pine woods",
+          "gotoId": 100
+        },
+        {
+          "description": "Climb the exposed ridge instead",
+          "gotoId": 200,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "4",
+            "text": "The wind on the ridge cuts through your cloak and numbs your hands."
+          }
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "text": "The pines thin into a clearing where a merchant's wagon lies overturned, its cargo untouched. Whatever stopped it was not interested in gold.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Search the wagon for supplies",
+          "gotoId": 300,
+          "consequence": {
+            "type": "GAIN_HEALTH",
+            "value": "5",
+            "text": "You find a flask of elderberry tonic wedged under the seat and drink your fill."
+          }
+        },
+        {
+          "description": "Leave it be and press on to the pass",
+          "gotoId": 400
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "text": "From the ridge you can see the whole valley, and the dragon circling it. It is smaller than the stories claimed, and it is favouring one wing.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Watch until you understand what is wrong with the wing",
+          "gotoId": 300
+        },
+        {
+          "description": "Descend quickly while it is still in the air",
+          "gotoId": 400
+        }
+      ]
+    },
+    {
+      "id": 300,
+      "text": "You reach the mouth of the lair. Scorch marks fan across the rock, but they are old, and the bones scattered at the entrance belong to sheep rather than to people.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Call out to the dragon and offer to talk",
+          "gotoId": 900
+        },
+        {
+          "description": "Draw your blade and step inside",
+          "gotoId": 500,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "6",
+            "text": "You slip on loose scree at the entrance and open a gash across your forearm."
+          }
+        }
+      ]
+    },
+    {
+      "id": 400,
+      "text": "The pass is choked with rockfall, and beyond it the lair waits. There is no cover here and no clever approach left to you.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Climb the rockfall and enter openly",
+          "gotoId": 300
+        },
+        {
+          "description": "Wait for dusk and enter unseen",
+          "gotoId": 500
+        }
+      ]
+    },
+    {
+      "id": 500,
+      "text": "Inside, the dragon lies curled around a clutch of eggs, one wing splinted with pine branches by hands that were clearly not its own. Someone in the village has been up here already.",
+      "type": "NODE",
+      "options": [
+        {
+          "description": "Lower your blade and ask who tended the wing",
+          "gotoId": 900
+        },
+        {
+          "description": "Strike while it sleeps",
+          "gotoId": 1000,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": "8",
+            "text": "The dragon wakes before your blade lands, and the tail catches you across the ribs."
+          }
+        }
+      ]
+    },
+    {
+      "id": 900,
+      "text": "The dragon's voice is quieter than you expected. A trade is struck: safe passage for the caravans, and grazing rights on the high meadow for the eggs. You carry the terms back down the mountain, and the pass opens by the next full moon.",
+      "type": "END"
+    },
+    {
+      "id": 1000,
+      "text": "You limp back into the village with a scale as proof and a wound that will not close cleanly. The pass is open, the dragon is gone, and nobody asks what happened to the eggs.",
+      "type": "END"
+    }
+  ]
+}
