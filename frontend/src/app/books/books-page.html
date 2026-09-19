@@ -12,6 +12,27 @@
     </p>
   </header>
 
+  <div class="mx-auto mt-8 max-w-md">
+    <ab-search-input (search)="onSearch($event)" />
+  </div>
+  <div class="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+    <span class="flex items-center gap-2 text-sm font-medium text-ink-soft">
+      <ng-icon name="phosphorFunnelLight"/>
+      Filters:
+    </span>
+
+    <ab-filter-chips
+      [options]="genreOptions()"
+      [selected]="genres()"
+      (toggled)="toggleGenre($event)"
+    />
+    <ab-filter-chips
+      [options]="difficultyOptions()"
+      [selected]="difficulties()"
+      (toggled)="toggleDifficulty($event)"
+    />
+  </div>
+
   @if (failed()) {
     <p class="mt-12 text-center text-hard-fg" role="alert">
       The library could not be reached. Please try again.
@@ -19,7 +40,13 @@
   } @else if (loading()) {
     <p class="mt-12 text-center text-ink-faint" aria-live="polite">Gathering adventures…</p>
   } @else if (!books().length) {
-    <p class="mt-12 text-center text-ink-faint">No adventures found.</p>
+    <p class="mt-12 text-center text-ink-faint">
+      @if (searchTerm()) {
+        No adventures match "{{ searchTerm() }}”.
+      } @else {
+        No adventures found.
+      }
+    </p>
   } @else {
     <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       @for (book of books(); track book.slug) {

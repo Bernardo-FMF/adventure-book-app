@@ -25,6 +25,8 @@ export interface BookList {
 
 export interface Metadata {
   bookCount: number;
+  genres: Genre[];
+  difficulties: Difficulty[];
 }
 
 export interface BookQuery {

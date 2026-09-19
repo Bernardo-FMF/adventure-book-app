@@ -1,0 +1,16 @@
+<label class="relative block">
+  <span class="sr-only">Search adventures</span>
+
+  <ng-icon
+    name="phosphorMagnifyingGlassLight"
+    class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-faint"
+    aria-hidden="true"
+  />
+
+  <input
+    type="search"
+    [placeholder]="'Search adventures...'"
+    (input)="onInput($event)"
+    class="w-full rounded-xl bg-parchment-dim py-3 pr-5 pl-12 text-sm text-ink focus:outline-2 focus:outline-offset-2 focus:outline-gold-400"
+  />
+</label>
