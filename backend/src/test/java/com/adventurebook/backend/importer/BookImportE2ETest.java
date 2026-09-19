@@ -1,8 +1,10 @@
 package com.adventurebook.backend.importer;
 
+import com.adventurebook.backend.persistence.types.Difficulty;
 import com.adventurebook.backend.persistence.types.Genre;
 import com.adventurebook.backend.response.BookDto;
 import com.adventurebook.backend.response.BookListDto;
+import com.adventurebook.backend.response.MetadataDto;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,4 +55,22 @@ class BookImportE2ETest extends PostgresIntegrationTest {
         assertThat(book.description()).startsWith("Locked in a windowless cell");
         assertThat(book.genre()).isEqualTo(Genre.MYSTERY);
     }
+
+    @Test
+    @DisplayName("metadata describes the imported books")
+    void servesMetadataForTheImportedBooks() {
+        MetadataDto metadata = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build()
+                .get().uri("/api/books/metadata").exchange()
+                .expectStatus().isOk()
+                .expectBody(MetadataDto.class)
+                .returnResult().getResponseBody();
+
+        assertThat(metadata).isNotNull();
+        assertThat(metadata.bookCount()).isEqualTo(4);
+        assertThat(metadata.genres())
+                .containsExactly(Genre.FANTASY, Genre.HIGH_FANTASY, Genre.ADVENTURE, Genre.MYSTERY);
+        assertThat(metadata.difficulties())
+                .containsExactly(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD);
+    }
 }
+
