@@ -23,8 +23,20 @@
   } @else {
     <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       @for (book of books(); track book.slug) {
-        <li><ab-book-card [book]="book" /></li>
+        <li>
+          <ab-book-card [book]="book" />
+        </li>
       }
     </ul>
+
+    @if (pagination(); as page) {
+      <div class="mt-10">
+        <ab-pagination
+          [currentPage]="page.currentPage"
+          [totalPages]="page.totalPages"
+          (pageChange)="loadPage($event)"
+        />
+      </div>
+    }
   }
 </section>

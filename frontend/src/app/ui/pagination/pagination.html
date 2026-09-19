@@ -1,0 +1,38 @@
+<nav class="flex items-center justify-center gap-1" aria-label="Pagination">
+  <button
+    type="button"
+    class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition hover:bg-parchment-dim disabled:pointer-events-none disabled:opacity-40"
+    [disabled]="isFirst()"
+    (click)="pageChange.emit(currentPage() - 1)"
+  >
+    <ng-icon name="phosphorCaretLeftLight" aria-hidden="true" />
+    Previous
+  </button>
+
+  @for (page of pages(); track $index) {
+    @if (page === null) {
+      <span class="px-2 text-ink-faint" aria-hidden="true">…</span>
+    } @else {
+      <button
+        type="button"
+        class="min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition"
+        [class]="page === currentPage() ? 'bg-gold-500 text-white' : 'text-ink-soft hover:bg-parchment-dim'"
+        [attr.aria-current]="page === currentPage() ? 'page' : null"
+        [attr.aria-label]="'Page ' + (page + 1)"
+        (click)="pageChange.emit(page)"
+      >
+        {{ page + 1 }}
+      </button>
+    }
+  }
+
+  <button
+    type="button"
+    class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition hover:bg-parchment-dim disabled:pointer-events-none disabled:opacity-40"
+    [disabled]="isLast()"
+    (click)="pageChange.emit(currentPage() + 1)"
+  >
+    Next
+    <ng-icon name="phosphorCaretRightLight" aria-hidden="true" />
+  </button>
+</nav>

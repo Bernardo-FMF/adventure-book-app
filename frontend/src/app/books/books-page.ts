@@ -1,18 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { phosphorBooksLight } from '@ng-icons/phosphor-icons/light';
 import { BookApi } from '../core/api/book.api';
-import { Book, BookList, Pagination } from '../core/api/book.models';
+import { Book, Pagination } from '../core/api/book.models';
 import { BookCard } from '../ui/book-card/book-card';
 import { HeroBanner } from '../ui/hero-banner/hero-banner';
-import { catchError, map, of, Subject, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Pagination as PaginationControl } from '../ui/pagination/pagination';
+import { catchError, of, Subject, switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
-const PAGE_SIZE = 12;
+// Small value to be able to display the pagination
+const PAGE_SIZE = 3;
 
 @Component({
   selector: 'ab-books-page',
-  imports: [BookCard, HeroBanner, NgIcon],
+  imports: [BookCard, HeroBanner, NgIcon, PaginationControl],
   viewProviders: [provideIcons({ phosphorBooksLight })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './books-page.html',
@@ -20,9 +22,12 @@ const PAGE_SIZE = 12;
 export class BooksPage {
   private readonly api = inject(BookApi);
 
-  protected readonly pageRequests = new Subject<number>();
+  private readonly pageRequests = new Subject<number>();
 
-  protected readonly bookCount = signal<number | null>(null);
+  private readonly metadata = toSignal(this.api.getMetadata().pipe(catchError(() => of(null))), {
+    initialValue: null,
+  });
+  protected readonly bookCount = computed(() => this.metadata()?.bookCount ?? null);
 
   protected readonly books = signal<Book[]>([]);
   protected readonly pagination = signal<Pagination | null>(null);
@@ -30,11 +35,6 @@ export class BooksPage {
   protected readonly failed = signal(false);
 
   constructor() {
-    this.api.getMetadata().subscribe({
-      next: (metadata) => this.bookCount.set(metadata.bookCount),
-      error: () => this.bookCount.set(null),
-    });
-
     this.pageRequests
       .pipe(
         tap(() => {
@@ -42,10 +42,7 @@ export class BooksPage {
           this.failed.set(false);
         }),
         switchMap((page) =>
-          this.api.getBooks({ page, size: PAGE_SIZE }).pipe(
-            map((result): BookList | null => result),
-            catchError(() => of(null)),
-          ),
+          this.api.getBooks({ page, size: PAGE_SIZE }).pipe(catchError(() => of(null))),
         ),
         takeUntilDestroyed(),
       )
