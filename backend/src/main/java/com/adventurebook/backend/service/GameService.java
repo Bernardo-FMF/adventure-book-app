@@ -2,11 +2,10 @@ package com.adventurebook.backend.service;
 
 import com.adventurebook.backend.exception.BookNotFoundException;
 import com.adventurebook.backend.exception.GameSessionNotFoundException;
+import com.adventurebook.backend.exception.InvalidChoiceException;
 import com.adventurebook.backend.exception.MissingSectionException;
-import com.adventurebook.backend.persistence.BookEntity;
-import com.adventurebook.backend.persistence.ConsequenceEntity;
-import com.adventurebook.backend.persistence.GameSessionEntity;
-import com.adventurebook.backend.persistence.SectionEntity;
+import com.adventurebook.backend.persistence.*;
+import com.adventurebook.backend.persistence.types.ConsequenceType;
 import com.adventurebook.backend.persistence.types.SectionType;
 import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.repository.GameRepository;
@@ -49,6 +48,44 @@ public class GameService {
                 .orElseThrow(() -> new GameSessionNotFoundException("Game with id " + gameId + " not found"));
 
         return mapGameState(game, game.getLastConsequence());
+    }
+
+    @Transactional
+    public GameStateDto makeChoice(UUID gameId, long optionId) {
+        GameSessionEntity game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new GameSessionNotFoundException("Game with id " + gameId + " not found"));
+
+        if (game.isOver()) {
+            throw new InvalidChoiceException("This session is already over");
+        }
+
+        List<OptionEntity> options = game.getSection().getOptions();
+        OptionEntity option = options.stream()
+                .filter(candidate -> Objects.equals(candidate.getId(), optionId))
+                .findFirst()
+                .orElseThrow(() -> new InvalidChoiceException("Option " + optionId + " is not offered by section '" + game.getSection().getSectionRef() + "'"));
+
+        ConsequenceEntity consequence = option.getConsequence();
+        game.recordConsequence(consequence);
+
+        if (Objects.nonNull(consequence)) {
+            if (consequence.getType() == ConsequenceType.LOSE_HEALTH) {
+                game.loseHealth(consequence.getAmount());
+            } else {
+                game.gainHealth(consequence.getAmount());
+            }
+        }
+
+        if (!game.isOver()) {
+            SectionEntity next = sectionRepository
+                    .findByBookIdAndSectionRef(game.getBook().getId(), option.getGotoRef())
+                    .orElseThrow(() -> new MissingSectionException("Option " + optionId + " points at missing section '" + option.getGotoRef() + "'"));
+            game.moveTo(next);
+        }
+
+        gameRepository.save(game);
+
+        return mapGameState(game, consequence);
     }
 
     private GameStateDto mapGameState(GameSessionEntity game, ConsequenceEntity lastConsequence) {

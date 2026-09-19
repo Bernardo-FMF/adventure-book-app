@@ -27,4 +27,9 @@ public class GameController {
     public ResponseEntity<GameStateDto> get(@PathVariable UUID gameId) {
         return ResponseEntity.ok(gameService.get(gameId));
     }
+
+    @PostMapping("/{gameId}/choices/{optionId}")
+    public ResponseEntity<GameStateDto> makeChoice(@PathVariable UUID gameId, @PathVariable long optionId) {
+        return ResponseEntity.ok(gameService.makeChoice(gameId, optionId));
+    }
 }

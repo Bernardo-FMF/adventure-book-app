@@ -2,6 +2,7 @@ package com.adventurebook.backend.controller;
 
 import com.adventurebook.backend.exception.BookNotFoundException;
 import com.adventurebook.backend.exception.GameSessionNotFoundException;
+import com.adventurebook.backend.exception.InvalidChoiceException;
 import com.adventurebook.backend.exception.MissingSectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,11 @@ public class ApiExceptionHandler {
     public ProblemDetail onGameSessionNotFound(GameSessionNotFoundException exception) {
         log.error("Game session not found: {}", exception.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidChoiceException.class)
+    public ProblemDetail onInvalidChoice(InvalidChoiceException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(MissingSectionException.class)

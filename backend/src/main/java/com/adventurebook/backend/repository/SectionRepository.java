@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface SectionRepository extends JpaRepository<SectionEntity, Long> {
     Optional<SectionEntity> findByBookIdAndType(Long id, SectionType sectionType);
+
+    Optional<SectionEntity> findByBookIdAndSectionRef(Long id, String gotoRef);
 }
