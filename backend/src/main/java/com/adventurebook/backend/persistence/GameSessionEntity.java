@@ -30,6 +30,10 @@ public class GameSessionEntity {
     @Column(name = "status", nullable = false, length = 12)
     private GameStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_consequence_id")
+    private ConsequenceEntity lastConsequence;
+
     protected GameSessionEntity() {
     }
 
@@ -56,6 +60,10 @@ public class GameSessionEntity {
 
     public void gainHealth(int amount) {
         this.health = Math.min(STARTING_HEALTH, this.health + amount);
+    }
+
+    public void recordConsequence(ConsequenceEntity consequence) {
+        this.lastConsequence = consequence;
     }
 
     public UUID getId() {
