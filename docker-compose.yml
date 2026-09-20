@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: adventureBooks
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d adventureBooks"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    image: adventure-book/backend:latest
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/adventureBooks
+      DB_USER: user
+      DB_PASSWORD: password
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 5s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    image: adventure-book/frontend:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
