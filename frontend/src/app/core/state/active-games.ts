@@ -15,6 +15,11 @@ export class ActiveGames {
     this.write();
   }
 
+  remove(bookId: number): void {
+    this.games.update(({ [bookId]: _removed, ...rest }) => rest);
+    this.write();
+  }
+
   removeGame(gameId: string): void {
     this.games.update((current) =>
       Object.fromEntries(Object.entries(current).filter(([, id]) => id !== gameId)),
