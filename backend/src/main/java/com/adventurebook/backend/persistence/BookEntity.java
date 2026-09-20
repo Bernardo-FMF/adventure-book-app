@@ -5,11 +5,10 @@ import com.adventurebook.backend.persistence.types.Genre;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Formula;
+import org.hibernate.proxy.HibernateProxy;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "book")
@@ -122,5 +121,37 @@ public class BookEntity {
 
     public int getSectionsCount() {
         return sectionsCount;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        Class<?> otherClass = o instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisClass = this instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : getClass();
+        if (thisClass != otherClass) {
+            return false;
+        }
+        return getId() != null && Objects.equals(getId(), ((BookEntity) o).getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
+                : getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "BookEntity{id=" + id + ", slug='" + slug + "', title='" + title + "'}";
     }
 }
