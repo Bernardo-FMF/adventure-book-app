@@ -2,6 +2,7 @@ export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
 export type Genre = 'FANTASY' | 'HIGH_FANTASY' | 'ADVENTURE' | 'STEAMPUNK_MYSTERY' | 'MYSTERY';
 
 export interface Book {
+  id: number;
   slug: string;
   title: string;
   author: string | null;

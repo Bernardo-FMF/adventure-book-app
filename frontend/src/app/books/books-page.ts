@@ -19,6 +19,9 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SearchInput } from '../ui/search-input/search-input';
 import { FilterChips } from '../ui/filter-chips/filter-chips';
+import { GameApi } from '../core/api/game.api';
+import { ActiveGames } from '../core/state/active-games';
+import { Router } from '@angular/router';
 
 // Small value to be able to display the pagination
 const PAGE_SIZE = 3;
@@ -33,11 +36,17 @@ const SEARCH_DEBOUNCE_MS = 300;
   templateUrl: './books-page.html',
 })
 export class BooksPage {
-  private readonly api = inject(BookApi);
+  private readonly bookApi = inject(BookApi);
+  private readonly gameApi = inject(GameApi);
+  private readonly gamesCtx = inject(ActiveGames);
+  private readonly router = inject(Router);
 
-  private readonly metadata = toSignal(this.api.getMetadata().pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  private readonly metadata = toSignal(
+    this.bookApi.getMetadata().pipe(catchError(() => of(null))),
+    {
+      initialValue: null,
+    },
+  );
   protected readonly bookCount = computed(() => this.metadata()?.bookCount ?? null);
   protected readonly genreOptions = computed(() => this.metadata()?.genres ?? []);
   protected readonly difficultyOptions = computed(() => this.metadata()?.difficulties ?? []);
@@ -46,6 +55,7 @@ export class BooksPage {
   protected readonly pagination = signal<Pagination | null>(null);
   protected readonly loading = signal(false);
   protected readonly failed = signal(false);
+  protected readonly loadingGameStartOp = signal<number | null>(null);
 
   // Query variables
   private readonly page = signal(0);
@@ -77,7 +87,7 @@ export class BooksPage {
           this.failed.set(false);
         }),
         switchMap((page) =>
-          this.api
+          this.bookApi
             .getBooks({
               page: this.page(),
               size: PAGE_SIZE,
@@ -119,5 +129,34 @@ export class BooksPage {
 
   private toggle<T extends string>(current: readonly T[], value: NoInfer<T>): T[] {
     return current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+  }
+
+  protected hasGame(bookId: number): boolean {
+    return this.gamesCtx.gameFor(bookId) !== undefined;
+  }
+
+  protected play(book: Book): void {
+    const gameId = this.gamesCtx.gameFor(book.id);
+    if (gameId !== undefined) {
+      this.router.navigate(['/games', gameId]);
+      return;
+    }
+
+    if (this.loadingGameStartOp() !== null) {
+      return;
+    }
+
+    this.loadingGameStartOp.set(book.id);
+
+    this.gameApi.start(book.id).subscribe({
+      next: (game) => {
+        this.gamesCtx.save(book.id, game.id);
+        this.router.navigate(['/games', game.id]);
+      },
+      error: () => {
+        this.failed.set(true);
+        this.loadingGameStartOp.set(null);
+      },
+    });
   }
 }

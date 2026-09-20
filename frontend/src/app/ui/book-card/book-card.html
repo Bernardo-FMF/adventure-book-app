@@ -32,11 +32,16 @@
     </ul>
   }
 
-  <a
-    [routerLink]="['/books', book().slug]"
-    class="mt-auto flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-4 py-2.5 font-semibold text-white transition hover:bg-gold-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600"
+  <button
+    type="button"
+    [disabled]="disabled()"
+    [attr.aria-label]="(inProgress() ? 'Continue ' : 'Begin ') + book().title"
+    class="mt-auto flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-4 py-2.5 font-semibold text-white transition
+    hover:bg-gold-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600
+      disabled:cursor-not-allowed disabled:opacity-60"
+    [class]="inProgress() ? 'bg-ink hover:bg-ink-soft' : 'bg-gold-500 hover:bg-gold-600'"
+    (click)="startPlay.emit()"
   >
-    <ng-icon name="phosphorStarLight" aria-hidden="true" />
-    Begin Quest
-  </a>
+    {{ inProgress() ? 'Continue Quest' : 'Begin Quest' }}
+  </button>
 </article>
