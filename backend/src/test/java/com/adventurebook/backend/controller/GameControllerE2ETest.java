@@ -11,6 +11,7 @@ import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.response.GameStateDto;
 import com.adventurebook.backend.response.OptionDto;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,11 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
 
     private RestTestClient client;
     private long bookId;
+
+    @AfterEach
+    void removeSeededBooks() {
+        bookRepository.deleteAll();
+    }
 
     private RestTestClient.ResponseSpec startGame(long id) {
         return client.post().uri("/api/games")

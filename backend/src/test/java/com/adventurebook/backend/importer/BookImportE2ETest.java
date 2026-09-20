@@ -5,9 +5,13 @@ import com.adventurebook.backend.persistence.types.Genre;
 import com.adventurebook.backend.response.BookDto;
 import com.adventurebook.backend.response.BookListDto;
 import com.adventurebook.backend.response.MetadataDto;
+import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -18,6 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BookImportE2ETest extends PostgresIntegrationTest {
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private BookImportService importService;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @BeforeEach
+    void reimportSeedBooks() throws Exception {
+        bookRepository.deleteAll();
+        importService.run(new DefaultApplicationArguments());
+    }
 
     private BookListDto books() {
         return RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build()
@@ -33,7 +49,6 @@ class BookImportE2ETest extends PostgresIntegrationTest {
         BookListDto body = books();
 
         assertThat(body).isNotNull();
-        // The originals are left broken on purpose, so only their repaired counterparts arrive.
         assertThat(body.books()).extracting(BookDto::title).containsExactlyInAnyOrder(
                 "(Fixed) The Prisoner: Escape",
                 "(Fixed) The Crystal Caverns",

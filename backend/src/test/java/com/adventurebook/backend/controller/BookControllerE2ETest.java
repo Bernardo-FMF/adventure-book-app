@@ -10,6 +10,7 @@ import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.response.BookDto;
 import com.adventurebook.backend.response.BookListDto;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,11 @@ class BookControllerE2ETest extends PostgresIntegrationTest {
                 book("pirates-jade-sea", "Pirates of the Jade Sea", "Marina Blackwood", Difficulty.MEDIUM, Genre.ADVENTURE, 2, "Sailing"),
                 book("the-prisoner", "The Prisoner", "Daniel El Fuego", Difficulty.HARD, Genre.MYSTERY, 5, "Escape")
         ));
+    }
+
+    @AfterEach
+    void removeSeededBooks() {
+        bookRepository.deleteAll();
     }
 
     private static BookEntity book(String slug, String title, String author, Difficulty difficulty, Genre genre, int sections, String tag) {

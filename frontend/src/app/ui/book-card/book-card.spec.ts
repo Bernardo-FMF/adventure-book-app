@@ -4,6 +4,7 @@ import { Book } from '../../core/api/book.models';
 import { BookCard } from './book-card';
 
 const BOOK: Book = {
+  id: 3,
   slug: 'crystal-caverns',
   title: 'The Crystal Caverns',
   author: 'Evelyn Brightwater',
@@ -46,10 +47,34 @@ describe('BookCard', () => {
     expect(el.textContent).toContain('Medium');
   });
 
-  it('links to the book', async () => {
+  it('reports the click rather than navigating itself', async () => {
     const el = await render(BOOK);
+    let clicks = 0;
+    fixture.componentInstance.startPlay.subscribe(() => (clicks += 1));
 
-    expect(el.querySelector('a')?.getAttribute('href')).toBe('/books/crystal-caverns');
+    (el.querySelector('button') as HTMLButtonElement).click();
+
+    expect(clicks).toBe(1);
+  });
+
+  it('offers to continue a book that already has a game', async () => {
+    fixture = TestBed.createComponent(BookCard);
+    fixture.componentRef.setInput('book', BOOK);
+    fixture.componentRef.setInput('inProgress', true);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('button')?.textContent).toContain('Continue Quest');
+    expect(el.querySelector('button')?.getAttribute('aria-label')).toBe('Continue The Crystal Caverns');
+  });
+
+  it('does not offer the button while a game is being started', async () => {
+    fixture = TestBed.createComponent(BookCard);
+    fixture.componentRef.setInput('book', BOOK);
+    fixture.componentRef.setInput('disabled', true);
+    await fixture.whenStable();
+
+    expect((fixture.nativeElement.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('omits the optional parts a book may not have', async () => {
