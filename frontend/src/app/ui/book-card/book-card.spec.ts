@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { Book } from '../../core/api/book.models';
 import { BookCard } from './book-card';
 
@@ -28,7 +27,6 @@ describe('BookCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BookCard],
-      providers: [provideRouter([])],
     }).compileComponents();
   });
 
@@ -65,7 +63,9 @@ describe('BookCard', () => {
     const el = fixture.nativeElement as HTMLElement;
 
     expect(el.querySelector('button')?.textContent).toContain('Continue Quest');
-    expect(el.querySelector('button')?.getAttribute('aria-label')).toBe('Continue The Crystal Caverns');
+    expect(el.querySelector('button')?.getAttribute('aria-label')).toBe(
+      'Continue The Crystal Caverns',
+    );
   });
 
   it('does not offer the button while a game is being started', async () => {
@@ -74,7 +74,9 @@ describe('BookCard', () => {
     fixture.componentRef.setInput('disabled', true);
     await fixture.whenStable();
 
-    expect((fixture.nativeElement.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
+    expect((fixture.nativeElement.querySelector('button') as HTMLButtonElement).disabled).toBe(
+      true,
+    );
   });
 
   it('omits the optional parts a book may not have', async () => {

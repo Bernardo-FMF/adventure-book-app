@@ -1,1 +1,87 @@
-<p>Game {{ gameId() }}</p>
+<div class="mx-auto max-w-4xl px-6 py-8">
+  <header class="flex items-center justify-between gap-4">
+    <a
+      routerLink="/"
+      class="flex items-center gap-2 text-sm font-medium text-ink-soft transition hover:text-ink"
+    >
+      <ng-icon name="phosphorArrowLeftLight" aria-hidden="true" />
+      Back to Library
+    </a>
+
+    @if (state(); as game) {
+      <p class="flex items-center gap-2 rounded-full bg-parchment-dim px-4 py-1.5 text-sm font-bold text-ink">
+        <ng-icon name="phosphorBookOpenLight" aria-hidden="true" />
+        {{ game.bookSummary.title }}
+      </p>
+
+      <ab-health-meter [health]="game.health" [max]="maxHealth" />
+    }
+  </header>
+
+  @if (failed()) {
+    <p class="mt-16 text-center text-hard-fg" role="alert">
+      This adventure could not be reached. <a routerLink="/" class="underline">Back to the library</a>
+    </p>
+  } @else if (state(); as game) {
+    <section class="mt-8 rounded-2xl bg-card p-8 ring-1 ring-ink/10" [class.opacity-60]="loading()">
+      @if (game.consequence; as consequence) {
+        <p
+          class="mb-6 flex items-baseline gap-3 rounded-xl px-4 py-3 text-sm"
+          [class]="consequence.type === 'LOSE_HEALTH' ? 'bg-hard-bg text-hard-fg' : 'bg-easy-bg text-easy-fg'"
+          aria-live="polite"
+        >
+          <span class="font-bold">
+            {{ consequence.type === 'LOSE_HEALTH' ? '-' : '+' }}{{ consequence.amount }} health
+          </span>
+          <span>{{ consequence.text }}</span>
+        </p>
+      }
+
+      @if (game.status !== 'DEAD') {
+        <p class="font-display text-lg leading-relaxed whitespace-pre-line text-ink">{{ game.section.text }}</p>
+      }
+
+      @switch (game.status) {
+        @case ('IN_PROGRESS') {
+          <div class="mt-8 border-t border-ink/10 pt-6">
+            <h2 class="font-display text-lg font-bold text-ink">What do you choose?</h2>
+
+            <ul class="mt-4 flex flex-col gap-3">
+              @for (option of game.section.options; track option.id; let index = $index) {
+                <li>
+                  <ab-choice-card
+                    [position]="index + 1"
+                    [description]="option.description"
+                    [disabled]="loading()"
+                    (chosen)="choose(option.id)"
+                  />
+                </li>
+              }
+            </ul>
+          </div>
+        }
+        @case ('FINISHED') {
+          <div class="mt-8 flex flex-col items-center gap-3 border-t border-ink/10 pt-6 text-center">
+            <h2 class="font-display text-xl font-bold text-ink">Your adventure is complete</h2>
+            <a routerLink="/"
+               class="rounded-lg bg-gold-500 px-4 py-2.5 font-semibold text-white transition hover:bg-gold-600">
+              Back to the Library
+            </a>
+          </div>
+        }
+        @case ('DEAD') {
+          <div class="mt-8 flex flex-col items-center gap-3 border-t border-ink/10 pt-6 text-center">
+            <h2 class="font-display text-xl font-bold text-ink">You have died</h2>
+            <p class="text-sm text-ink-soft">Your adventure ends here.</p>
+            <a routerLink="/"
+               class="rounded-lg bg-gold-500 px-4 py-2.5 font-semibold text-white transition hover:bg-gold-600">
+              Back to the Library
+            </a>
+          </div>
+        }
+      }
+    </section>
+  } @else if (loading()) {
+    <p class="mt-16 text-center text-ink-faint" aria-live="polite">Opening the book…</p>
+  }
+</div>

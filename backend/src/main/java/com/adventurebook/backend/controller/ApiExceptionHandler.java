@@ -29,6 +29,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(InvalidChoiceException.class)
     public ProblemDetail onInvalidChoice(InvalidChoiceException exception) {
+        log.error("Chosen option is invalid: {}", exception.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 

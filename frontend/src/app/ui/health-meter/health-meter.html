@@ -1,0 +1,8 @@
+<p class="flex items-center gap-2 text-sm font-semibold text-ink">
+  <ng-icon name="phosphorHeartLight" aria-hidden="true" />
+  <span class="sr-only">Health</span>
+  <span class="h-2 w-24 overflow-hidden rounded-full bg-parchment-dim" aria-hidden="true">
+    <span class="block h-full rounded-full bg-ink transition-all" [style.width.%]="percentage()"></span>
+  </span>
+  {{ health() }} / {{ max() }}
+</p>
