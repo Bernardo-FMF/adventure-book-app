@@ -1,11 +1,9 @@
 package com.adventurebook.backend.service;
 
-import com.adventurebook.backend.exception.BookNotFoundException;
-import com.adventurebook.backend.exception.GameSessionNotFoundException;
-import com.adventurebook.backend.exception.InvalidChoiceException;
-import com.adventurebook.backend.exception.MissingSectionException;
+import com.adventurebook.backend.exception.*;
 import com.adventurebook.backend.persistence.*;
 import com.adventurebook.backend.persistence.types.ConsequenceType;
+import com.adventurebook.backend.persistence.types.GameStatus;
 import com.adventurebook.backend.persistence.types.SectionType;
 import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.repository.GameRepository;
@@ -31,29 +29,42 @@ public class GameService {
     }
 
     @Transactional
-    public GameStateDto start(long bookId) {
+    public GameStateDto start(PlayerEntity player, long bookId) {
         BookEntity book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("No book with id " + bookId));
+
+        boolean gameAlreadyExists = gameRepository.existsByPlayerIdAndBookIdAndStatus(player.getId(), bookId, GameStatus.IN_PROGRESS);
+        if (gameAlreadyExists) {
+            throw new InvalidGameSessionException("Game for book " + book.getTitle() + " is already created for user " + player.getUsername());
+        }
 
         SectionEntity beginningSection = sectionRepository.findByBookIdAndType(book.getId(), SectionType.BEGIN)
                 .orElseThrow(() -> new MissingSectionException("Book " + bookId + " has no beginning section"));
 
-        GameSessionEntity game = gameRepository.save(new GameSessionEntity(book, beginningSection));
+        GameSessionEntity game = gameRepository.save(new GameSessionEntity(book, beginningSection, player));
         return mapGameState(game, null);
     }
 
     @Transactional(readOnly = true)
-    public GameStateDto get(UUID gameId) {
+    public GameStateDto get(PlayerEntity player, UUID gameId) {
         GameSessionEntity game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new GameSessionNotFoundException("Game with id " + gameId + " not found"));
+
+        if (!game.belongsTo(player)) {
+            throw new GameSessionNotFoundException("Game with id " + gameId + " not found");
+        }
 
         return mapGameState(game, game.getLastConsequence());
     }
 
     @Transactional
-    public GameStateDto makeChoice(UUID gameId, long optionId) {
+    public GameStateDto makeChoice(PlayerEntity player, UUID gameId, long optionId) {
         GameSessionEntity game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new GameSessionNotFoundException("Game with id " + gameId + " not found"));
+
+        if (!game.belongsTo(player)) {
+            throw new GameSessionNotFoundException("Game with id " + gameId + " not found");
+        }
 
         if (game.isOver()) {
             throw new InvalidChoiceException("This session is already over");
@@ -86,6 +97,18 @@ public class GameService {
         gameRepository.save(game);
 
         return mapGameState(game, consequence);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameSummaryDto> listActive(PlayerEntity player) {
+        return gameRepository.findByPlayerIdAndStatus(player.getId(), GameStatus.IN_PROGRESS)
+                .stream()
+                .map(this::mapGameSummary)
+                .toList();
+    }
+
+    private GameSummaryDto mapGameSummary(GameSessionEntity game) {
+        return new GameSummaryDto(game.getId(), game.getBook().getId());
     }
 
     private GameStateDto mapGameState(GameSessionEntity game, ConsequenceEntity lastConsequence) {

@@ -3,7 +3,9 @@ package com.adventurebook.backend.persistence;
 import com.adventurebook.backend.persistence.types.GameStatus;
 import com.adventurebook.backend.persistence.types.SectionType;
 import jakarta.persistence.*;
+import org.hibernate.proxy.HibernateProxy;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -34,12 +36,17 @@ public class GameSessionEntity {
     @JoinColumn(name = "last_consequence_id")
     private ConsequenceEntity lastConsequence;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_id")
+    private PlayerEntity player;
+
     protected GameSessionEntity() {
     }
 
-    public GameSessionEntity(BookEntity book, SectionEntity begin) {
+    public GameSessionEntity(BookEntity book, SectionEntity begin, PlayerEntity player) {
         this.book = book;
         this.section = begin;
+        this.player = player;
         this.health = STARTING_HEALTH;
         this.status = GameStatus.IN_PROGRESS;
     }
@@ -90,7 +97,47 @@ public class GameSessionEntity {
         return lastConsequence;
     }
 
+    public PlayerEntity getPlayer() {
+        return player;
+    }
+
     public boolean isOver() {
         return status != GameStatus.IN_PROGRESS;
+    }
+
+    public boolean belongsTo(PlayerEntity other) {
+        return player != null && other != null && Objects.equals(player.getId(), other.getId());
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        Class<?> otherClass = o instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisClass = this instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass()
+                : getClass();
+        if (thisClass != otherClass) {
+            return false;
+        }
+        return getId() != null && Objects.equals(getId(), ((GameSessionEntity) o).getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy proxy
+                ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
+                : getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "GameSessionEntity{id=" + id + ", health=" + health + ", status=" + status + "}";
     }
 }

@@ -9,6 +9,7 @@ import com.adventurebook.backend.persistence.types.GameStatus;
 import com.adventurebook.backend.persistence.types.SectionType;
 import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.response.GameStateDto;
+import com.adventurebook.backend.response.GameSummaryDto;
 import com.adventurebook.backend.response.OptionDto;
 import com.adventurebook.backend.utils.PostgresIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
@@ -18,8 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,12 +39,30 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
     @Autowired
     private BookRepository bookRepository;
 
+    private static final String BEARER_PLAYER = "Bearer tester";
+
     private RestTestClient client;
+    private RestTestClient anonymousClient;
     private long bookId;
 
     @AfterEach
     void removeSeededBooks() {
         bookRepository.deleteAll();
+    }
+
+    private RestTestClient playerNamed(String authorization) {
+        return RestTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, authorization)
+                .build();
+    }
+
+    private List<GameSummaryDto> activeGames(RestTestClient forPlayer) {
+        return forPlayer.get().uri("/api/games")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(new ParameterizedTypeReference<List<GameSummaryDto>>() {})
+                .returnResult().getResponseBody();
     }
 
     private RestTestClient.ResponseSpec startGame(long id) {
@@ -71,7 +94,12 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
 
     @BeforeEach
     void seedBook() {
-        client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+        // Every game endpoint resolves its player from this header, so the default spares each test from repeating it.
+        client = RestTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, BEARER_PLAYER)
+                .build();
+        anonymousClient = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
         bookRepository.deleteAll();
 
         BookEntity book = new BookEntity("the-pass", "The Mountain Pass");
@@ -136,17 +164,6 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
         assertThat(state.section().options()).extracting(OptionDto::description)
                 .containsExactly("Take the old road", "Climb the ridge");
         assertThat(state.section().options()).allSatisfy(option -> assertThat(option.id()).isPositive());
-    }
-
-    @Test
-    @DisplayName("each start is its own game")
-    void startsIndependentGames() {
-        GameStateDto first = startGame(bookId).expectBody(GameStateDto.class).returnResult().getResponseBody();
-        GameStateDto second = startGame(bookId).expectBody(GameStateDto.class).returnResult().getResponseBody();
-
-        assertThat(first).isNotNull();
-        assertThat(second).isNotNull();
-        assertThat(first.id()).isNotEqualTo(second.id());
     }
 
     @Test
@@ -281,6 +298,47 @@ class GameControllerE2ETest extends PostgresIntegrationTest {
         client.post().uri("/api/games/" + onTheRoad.id() + "/choices/" + pressOn)
                 .exchange()
                 .expectStatus().isEqualTo(409);
+    }
+
+    @Test
+    @DisplayName("a request without a player name is refused")
+    void refusesAnAnonymousRequest() {
+        anonymousClient.post().uri("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"bookId\": " + bookId + "}")
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    @DisplayName("a player cannot start a second game for a book they are already playing")
+    void refusesASecondGameForTheSameBook() {
+        start();
+
+        startGame(bookId).expectStatus().isEqualTo(409);
+    }
+
+    @Test
+    @DisplayName("another player's game is invisible rather than forbidden")
+    void hidesSomeoneElsesGame() {
+        GameStateDto mine = start();
+
+        RestTestClient intruder = playerNamed("Bearer someone-else");
+
+        intruder.get().uri("/api/games/" + mine.id()).exchange().expectStatus().isNotFound();
+    }
+
+    @Test
+    @DisplayName("a game in progress is listed so it can be resumed")
+    void listsTheGameInProgress() {
+        GameStateDto started = start();
+
+        assertThat(activeGames(client))
+                .singleElement()
+                .satisfies(summary -> {
+                    assertThat(summary.gameId()).isEqualTo(started.id());
+                    assertThat(summary.bookId()).isEqualTo(bookId);
+                });
     }
 }
 
