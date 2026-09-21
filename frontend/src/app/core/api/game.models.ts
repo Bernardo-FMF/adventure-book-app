@@ -4,6 +4,11 @@ export type ConsequenceType = 'LOSE_HEALTH' | 'GAIN_HEALTH';
 
 export const MAX_HEALTH = 10;
 
+export interface GameSummary {
+  gameId: string;
+  bookId: number;
+}
+
 export interface GameState {
   id: string;
   bookSummary: BookSummary;

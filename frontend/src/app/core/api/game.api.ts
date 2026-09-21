@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { GameState } from './game.models';
+import { GameState, GameSummary } from './game.models';
 
 @Injectable({ providedIn: 'root' })
 export class GameApi {
@@ -18,5 +18,9 @@ export class GameApi {
 
   makeChoice(gameId: string, optionId: number): Observable<GameState> {
     return this.http.post<GameState>(`${this.baseUrl}/${gameId}/choices/${optionId}`, null);
+  }
+
+  listActiveGames(): Observable<GameSummary[]> {
+    return this.http.get<GameSummary[]>(this.baseUrl);
   }
 }
