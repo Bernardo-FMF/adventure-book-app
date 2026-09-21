@@ -20,7 +20,7 @@ public class PlayerService {
             throw new MissingPlayerException("A player name is required to play");
         }
 
-        return playerRepository.findByUsernameIgnoreCase(username)
+        return playerRepository.findByUsername(username)
                 .orElseGet(() -> playerRepository.save(new PlayerEntity(username)));
     }
 }
