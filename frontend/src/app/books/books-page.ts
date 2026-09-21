@@ -10,7 +10,8 @@ import {
   catchError,
   debounceTime,
   distinctUntilChanged,
-  map, merge,
+  map,
+  merge,
   of,
   Subject,
   switchMap,
@@ -23,6 +24,7 @@ import { GameApi } from '../core/api/game.api';
 import { ActiveGames } from '../core/state/active-games';
 import { Router } from '@angular/router';
 import { PlayerState } from '../core/state/player';
+import { HttpErrorResponse } from '@angular/common/http';
 
 // Small value to be able to display the pagination
 const PAGE_SIZE = 3;
@@ -88,7 +90,7 @@ export class BooksPage {
           this.loading.set(true);
           this.failed.set(false);
         }),
-        switchMap((page) =>
+        switchMap(() =>
           this.bookApi
             .getBooks({
               page: this.page(),
@@ -160,7 +162,12 @@ export class BooksPage {
         this.activeGames.remember({ gameId: game.id, bookId: book.id });
         this.router.navigate(['/games', game.id]);
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 409) {
+          this.activeGames.fetch();
+          this.loadingGameStartOp.set(null);
+          return;
+        }
         this.failed.set(true);
         this.loadingGameStartOp.set(null);
       },
