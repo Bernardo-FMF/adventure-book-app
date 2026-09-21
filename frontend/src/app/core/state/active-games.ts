@@ -18,8 +18,6 @@ export class ActiveGames {
       .subscribe();
   }
 
-  // A game that has just been started is known in full, so it is added directly rather than refetched. Replacing any
-  // entry for the same book keeps the one-active-game-per-book invariant that the database enforces.
   remember(summary: GameSummary): void {
     this.activeGames.update((games) => [...games.filter((game) => game.bookId !== summary.bookId), summary]);
   }

@@ -10,6 +10,7 @@ import { GameState, MAX_HEALTH } from '../core/api/game.models';
 import { ActiveGames } from '../core/state/active-games';
 import { ChoiceCard } from '../ui/choice-card/choice-card';
 import { HealthMeter } from '../ui/health-meter/health-meter';
+import { PlayerState } from '../core/state/player';
 
 @Component({
   selector: 'ab-game-page',
@@ -27,6 +28,7 @@ export class GamePage {
   private readonly api = inject(GameApi);
   private readonly activeGames = inject(ActiveGames);
   private readonly router = inject(Router);
+  private readonly playerState = inject(PlayerState);
 
   // path param
   readonly gameId = input.required<string>();
@@ -75,6 +77,11 @@ export class GamePage {
   private handleError(call: Observable<GameState>): Observable<GameState | null> {
     return call.pipe(
       catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          this.playerState.remove();
+          this.router.navigate(['/adventurer']);
+          return EMPTY;
+        }
         if (error.status === 409) {
           return this.api.get(this.gameId()).pipe(catchError(() => of(null)));
         }
