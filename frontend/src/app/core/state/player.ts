@@ -13,7 +13,7 @@ export class PlayerState {
 
   store(username: string): void {
     const trimmedUsername = username.trim();
-    localStorage.setItem(STORAGE_KEY, username);
+    localStorage.setItem(STORAGE_KEY, trimmedUsername);
     this.nameState.set(trimmedUsername);
   }
 
