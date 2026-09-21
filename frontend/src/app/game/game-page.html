@@ -18,9 +18,9 @@
     }
   </header>
 
-  @if (failed()) {
+  @if (error(); as message) {
     <p class="mt-16 text-center text-hard-fg" role="alert">
-      This adventure could not be reached. <a routerLink="/" class="underline">Back to the library</a>
+      {{ message }} <a routerLink="/" class="underline">Back to the library</a>
     </p>
   } @else if (state(); as game) {
     <section class="mt-8 rounded-2xl bg-card p-8 ring-1 ring-ink/10" [class.opacity-60]="loading()">

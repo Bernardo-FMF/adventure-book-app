@@ -25,6 +25,7 @@ import { ActiveGames } from '../core/state/active-games';
 import { Router } from '@angular/router';
 import { PlayerState } from '../core/state/player';
 import { HttpErrorResponse } from '@angular/common/http';
+import { errorMessage } from '../core/api/error-message';
 
 // Small value to be able to display the pagination
 const PAGE_SIZE = 3;
@@ -58,7 +59,7 @@ export class BooksPage {
   protected readonly books = signal<Book[]>([]);
   protected readonly pagination = signal<Pagination | null>(null);
   protected readonly loading = signal(false);
-  protected readonly failed = signal(false);
+  protected readonly error = signal<string | null>(null);
   protected readonly loadingGameStartOp = signal<number | null>(null);
 
   // Query variables
@@ -88,7 +89,7 @@ export class BooksPage {
       .pipe(
         tap(() => {
           this.loading.set(true);
-          this.failed.set(false);
+          this.error.set(null);
         }),
         switchMap(() =>
           this.bookApi
@@ -99,14 +100,18 @@ export class BooksPage {
               genres: this.genres(),
               difficulties: this.difficulties(),
             })
-            .pipe(catchError(() => of(null))),
+            .pipe(
+              catchError((failure: unknown) => {
+                this.error.set(errorMessage(failure, 'Failed to obtain book listing'));
+                return of(null);
+              }),
+            ),
         ),
         takeUntilDestroyed(),
       )
       .subscribe((result) => {
         this.books.set(result?.books ?? []);
         this.pagination.set(result?.pagination ?? null);
-        this.failed.set(result === null);
         this.loading.set(false);
       });
 
@@ -164,11 +169,19 @@ export class BooksPage {
       },
       error: (error: HttpErrorResponse) => {
         if (error.status === 409) {
-          this.activeGames.fetch();
-          this.loadingGameStartOp.set(null);
+          // The game exists already; refreshing the listing is what turns the card into "Continue". Subscribing to
+          // load() rather than calling fetch() means a failed refresh says so, instead of leaving a button that
+          // silently does nothing however often it is pressed.
+          this.activeGames.load().subscribe({
+            next: () => this.loadingGameStartOp.set(null),
+            error: (failure: unknown) => {
+              this.error.set(errorMessage(failure, 'That adventure is already underway.'));
+              this.loadingGameStartOp.set(null);
+            },
+          });
           return;
         }
-        this.failed.set(true);
+        this.error.set(errorMessage(error, 'The adventure could not be started.'));
         this.loadingGameStartOp.set(null);
       },
     });
