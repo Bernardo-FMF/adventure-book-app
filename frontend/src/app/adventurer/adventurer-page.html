@@ -27,6 +27,7 @@
         name="adventurer"
         autocomplete="nickname"
         placeholder="Enter your name..."
+        maxlength="80"
         [value]="name()"
         (input)="onInput($event)"
         [attr.aria-invalid]="invalid() ? 'true' : null"

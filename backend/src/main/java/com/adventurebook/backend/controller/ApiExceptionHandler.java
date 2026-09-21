@@ -1,7 +1,7 @@
 package com.adventurebook.backend.controller;
 
 import com.adventurebook.backend.exception.*;
-import org.springframework.dao.DataIntegrityViolationException;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,6 +17,12 @@ public class ApiExceptionHandler {
     public ProblemDetail onMissingPlayer(MissingPlayerException exception) {
         log.warn("Request without a usable player name: {}", exception.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail onInvalidArgument(ConstraintViolationException exception) {
+        log.warn("Rejected request argument: {}", exception.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The player name is not valid");
     }
 
     @ExceptionHandler(BookNotFoundException.class)
