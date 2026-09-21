@@ -1,37 +1,38 @@
-import { Injectable, signal } from '@angular/core';
-
-const STORAGE_KEY = 'adventure-book.active-games';
+import { inject, Injectable, signal } from '@angular/core';
+import { GameApi } from '../api/game.api';
+import { GameSummary } from '../api/game.models';
+import { catchError, Observable, of, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ActiveGames {
-  private readonly games = signal<Record<number, string>>(this.read());
+  private readonly gameApi = inject(GameApi);
+  private readonly activeGames = signal<GameSummary[]>([]);
 
-  gameFor(bookId: number): string | undefined {
-    return this.games()[bookId];
+  load(): Observable<GameSummary[]> {
+    return this.gameApi.listActiveGames().pipe(tap((games) => this.activeGames.set(games)));
   }
 
-  save(bookId: number, gameId: string): void {
-    this.games.update((current) => ({ ...current, [bookId]: gameId }));
-    this.write();
+  fetch(): void {
+    this.load()
+      .pipe(catchError(() => of([])))
+      .subscribe();
   }
 
-  remove(bookId: number): void {
-    this.games.update(({ [bookId]: _removed, ...rest }) => rest);
-    this.write();
+  // A game that has just been started is known in full, so it is added directly rather than refetched. Replacing any
+  // entry for the same book keeps the one-active-game-per-book invariant that the database enforces.
+  remember(summary: GameSummary): void {
+    this.activeGames.update((games) => [...games.filter((game) => game.bookId !== summary.bookId), summary]);
   }
 
-  removeGame(gameId: string): void {
-    this.games.update((current) =>
-      Object.fromEntries(Object.entries(current).filter(([, id]) => id !== gameId)),
-    );
-    this.write();
+  findGame(bookId: number): string | undefined {
+    return this.activeGames().find((game) => game.bookId === bookId)?.gameId;
   }
 
-  private read(): Record<number, string> {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+  remove(gameId: string): void {
+    this.activeGames.update((games) => games.filter((game) => game.gameId !== gameId));
   }
 
-  private write(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.games()));
+  clear(): void {
+    this.activeGames.set([]);
   }
 }

@@ -96,7 +96,7 @@ export class GamePage {
     if (state) {
       this.state.set(state);
       if (state.status !== 'IN_PROGRESS') {
-        this.activeGames.remove(state.bookSummary.id);
+        this.activeGames.remove(state.id);
       }
     }
     this.failed.set(state === null);
@@ -104,7 +104,7 @@ export class GamePage {
   }
 
   private finish(): void {
-    this.activeGames.removeGame(this.gameId());
+    this.activeGames.remove(this.gameId());
     this.router.navigate(['/']);
   }
 }

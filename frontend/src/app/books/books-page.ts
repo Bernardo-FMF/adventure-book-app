@@ -22,6 +22,7 @@ import { FilterChips } from '../ui/filter-chips/filter-chips';
 import { GameApi } from '../core/api/game.api';
 import { ActiveGames } from '../core/state/active-games';
 import { Router } from '@angular/router';
+import { PlayerState } from '../core/state/player';
 
 // Small value to be able to display the pagination
 const PAGE_SIZE = 3;
@@ -38,8 +39,9 @@ const SEARCH_DEBOUNCE_MS = 300;
 export class BooksPage {
   private readonly bookApi = inject(BookApi);
   private readonly gameApi = inject(GameApi);
-  private readonly gamesCtx = inject(ActiveGames);
+  private readonly activeGames = inject(ActiveGames);
   private readonly router = inject(Router);
+  private readonly playerState = inject(PlayerState);
 
   private readonly metadata = toSignal(
     this.bookApi.getMetadata().pipe(catchError(() => of(null))),
@@ -132,11 +134,16 @@ export class BooksPage {
   }
 
   protected hasGame(bookId: number): boolean {
-    return this.gamesCtx.gameFor(bookId) !== undefined;
+    return this.activeGames.findGame(bookId) !== undefined;
   }
 
   protected play(book: Book): void {
-    const gameId = this.gamesCtx.gameFor(book.id);
+    if (!this.playerState.hasSession()) {
+      this.router.navigate(['/adventurer']);
+      return;
+    }
+
+    const gameId = this.activeGames.findGame(book.id);
     if (gameId !== undefined) {
       this.router.navigate(['/games', gameId]);
       return;
@@ -150,7 +157,7 @@ export class BooksPage {
 
     this.gameApi.start(book.id).subscribe({
       next: (game) => {
-        this.gamesCtx.save(book.id, game.id);
+        this.activeGames.remember({ gameId: game.id, bookId: book.id });
         this.router.navigate(['/games', game.id]);
       },
       error: () => {
