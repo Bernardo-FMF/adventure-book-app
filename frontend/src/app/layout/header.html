@@ -1,0 +1,23 @@
+<header class="flex items-center justify-end gap-4 bg-hero px-6 py-4">
+  @if (name(); as adventurer) {
+    <div class="flex items-center gap-3">
+      <span class="flex items-center gap-2 text-sm text-parchment">
+        {{ adventurer }}
+      </span>
+      <button
+        type="button"
+        (click)="remove()"
+        class="rounded-lg border border-parchment/30 px-3 py-1.5 text-sm font-semibold text-parchment transition hover:bg-hero-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-400"
+      >
+        Leave
+      </button>
+    </div>
+  } @else {
+    <a
+      routerLink="/adventurer"
+      class="rounded-lg bg-gold-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-gold-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-400"
+    >
+      Name Yourself
+    </a>
+  }
+</header>
