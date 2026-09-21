@@ -7,6 +7,7 @@ import { phosphorArrowLeftLight, phosphorBookOpenLight } from '@ng-icons/phospho
 import { catchError, EMPTY, Observable, of, Subject, switchMap, tap } from 'rxjs';
 import { GameApi } from '../core/api/game.api';
 import { GameState, MAX_HEALTH } from '../core/api/game.models';
+import { errorMessage } from '../core/api/error-message';
 import { ActiveGames } from '../core/state/active-games';
 import { ChoiceCard } from '../ui/choice-card/choice-card';
 import { HealthMeter } from '../ui/health-meter/health-meter';
@@ -36,7 +37,7 @@ export class GamePage {
   protected readonly maxHealth = MAX_HEALTH;
   protected readonly state = signal<GameState | null>(null);
   protected readonly loading = signal(true);
-  protected readonly failed = signal(false);
+  protected readonly error = signal<string | null>(null);
 
   private readonly choices = new Subject<number>();
 
@@ -83,12 +84,18 @@ export class GamePage {
           return EMPTY;
         }
         if (error.status === 409) {
-          return this.api.get(this.gameId()).pipe(catchError(() => of(null)));
+          return this.api.get(this.gameId()).pipe(
+            catchError((retryFailure: unknown) => {
+              this.error.set(errorMessage(retryFailure, 'Failed to obtain game session'));
+              return of(null);
+            }),
+          );
         }
         if (error.status === 404) {
           this.finish();
           return EMPTY;
         }
+        this.error.set(errorMessage(error, 'Failed to obtain game session'));
         return of(null);
       }),
     );
@@ -96,7 +103,7 @@ export class GamePage {
 
   private setRequestState(): void {
     this.loading.set(true);
-    this.failed.set(false);
+    this.error.set(null);
   }
 
   private handleStateChange(state: GameState | null): void {
@@ -106,7 +113,6 @@ export class GamePage {
         this.activeGames.remove(state.id);
       }
     }
-    this.failed.set(state === null);
     this.loading.set(false);
   }
 

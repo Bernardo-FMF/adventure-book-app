@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { PlayerState } from '../core/state/player';
 import { ActiveGames } from '../core/state/active-games';
 import { Router } from '@angular/router';
+import { errorMessage } from '../core/api/error-message';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { phosphorSparkleLight, phosphorUserLight } from '@ng-icons/phosphor-icons/light';
 
@@ -25,11 +26,10 @@ export class AdventurerPage {
   protected readonly name = signal('');
   protected readonly submitting = signal(false);
   protected readonly invalid = signal(false);
-  protected readonly failed = signal(false);
+  protected readonly error = signal<string | null>(null);
 
   protected onInput(event: Event): void {
     this.name.set((event.target as HTMLInputElement).value);
-    // Clearing on input, so the message does not sit there while the reader is already typing the fix.
     this.invalid.set(false);
   }
 
@@ -42,7 +42,7 @@ export class AdventurerPage {
       return;
     }
 
-    this.failed.set(false);
+    this.error.set(null);
     this.submitting.set(true);
 
     this.playerState.store(username);
@@ -50,9 +50,9 @@ export class AdventurerPage {
       next: () => {
         this.router.navigate(['/']);
       },
-      error: () => {
+      error: (failure: unknown) => {
         this.playerState.remove();
-        this.failed.set(true);
+        this.error.set(errorMessage(failure, 'Failed to create adventurer session'));
         this.submitting.set(false);
       },
     });
