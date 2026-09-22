@@ -74,14 +74,14 @@ public class BookImportService implements ApplicationRunner {
                 continue;
             }
 
-            BookEntity entity = mapper.toEntity(book, slug);
             try {
+                BookEntity entity = mapper.toEntity(book, slug);
                 repository.save(entity);
+                log.info("Book {} has been imported to the database", filename);
             } catch (Exception ex) {
                 log.warn("Book {} was rejected by the database. Cause: {}", filename, NestedExceptionUtils.getMostSpecificCause(ex).getMessage());
             }
 
-            log.info("Book {} has been imported to the database", filename);
         }
     }
 }

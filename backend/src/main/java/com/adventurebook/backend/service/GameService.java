@@ -9,6 +9,8 @@ import com.adventurebook.backend.repository.BookRepository;
 import com.adventurebook.backend.repository.GameRepository;
 import com.adventurebook.backend.repository.SectionRepository;
 import com.adventurebook.backend.response.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import java.util.UUID;
 
 @Service
 public class GameService {
+    private static final Logger log = LoggerFactory.getLogger(GameService.class);
+
     private final GameRepository gameRepository;
     private final BookRepository bookRepository;
     private final SectionRepository sectionRepository;
@@ -42,6 +46,8 @@ public class GameService {
                 .orElseThrow(() -> new MissingSectionException("Book " + bookId + " has no beginning section"));
 
         GameSessionEntity game = gameRepository.save(new GameSessionEntity(book, beginningSection, player));
+        log.info("Game {} started for player {} on book {}", game.getId(), player.getId(), bookId);
+
         return mapGameState(game, null);
     }
 
@@ -76,6 +82,8 @@ public class GameService {
                 .findFirst()
                 .orElseThrow(() -> new InvalidChoiceException("Option " + optionId + " is not offered by section '" + game.getSection().getSectionRef() + "'"));
 
+        String previousSectionRef = game.getSection().getSectionRef();
+
         ConsequenceEntity consequence = option.getConsequence();
         game.recordConsequence(consequence);
 
@@ -95,6 +103,9 @@ public class GameService {
         }
 
         gameRepository.save(game);
+
+        log.info("Game {}: section {} -> {} via option {} ({} health, {})",
+                gameId, previousSectionRef, game.getSection().getSectionRef(), optionId, game.getHealth(), game.getStatus());
 
         return mapGameState(game, consequence);
     }
