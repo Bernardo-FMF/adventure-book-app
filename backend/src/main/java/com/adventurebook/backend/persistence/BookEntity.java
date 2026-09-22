@@ -7,7 +7,6 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Formula;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.util.Objects;
 import java.util.*;
 
 @Entity
@@ -51,6 +50,7 @@ public class BookEntity {
 
     // This is used to obtain a count of how many sections a book has without actually loading the collection,
     // and just performing a lighter query that only obtains the count.
+    // The query is inlined into the query that fetches the book, so this field is not lazy.
     @Formula("(select count(*) from section s where s.book_id = id)")
     private int sectionsCount;
 
@@ -123,6 +123,17 @@ public class BookEntity {
         return sectionsCount;
     }
 
+    /**
+     * Entity equality is based on the database row, and nothing else.
+     * Comparing fields would make two unsaved books describing the same story equal, which they are not: they would become two rows.
+     * So a book with no id yet is equal only to itself.
+     * In short, compare ids only to avoid loading more entities.
+     * <p>
+     * We use the lazy initializer to obtain the class for 2 reasons:
+     * 1. The proxy will be a subclass generated at runtime, so comparing the book proxy to the book class would fail.
+     * 2. Using Hibernate.getClass() would give the correct class, but it would load the row, so there would be a query
+     * inside the equals.
+     */
     @Override
     public final boolean equals(Object o) {
         if (this == o) {
@@ -143,6 +154,11 @@ public class BookEntity {
         return getId() != null && Objects.equals(getId(), ((BookEntity) o).getId());
     }
 
+    /**
+     * Constant per entity class. The id cannot be used: it is null before the book is saved and assigned afterward,
+     * so a book added to a Set while new would move to a different bucket once persisted and be lost from the set it is already in.
+     * The cost is that every book collides, turning a set lookup into a list iteration.
+     */
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy proxy
@@ -150,6 +166,10 @@ public class BookEntity {
                 : getClass().hashCode();
     }
 
+    /**
+     * The entity toString should only list attributed that don't fire a query, otherwise we could encounter a situation
+     * where this would be called outside a session.
+     */
     @Override
     public String toString() {
         return "BookEntity{id=" + id + ", slug='" + slug + "', title='" + title + "'}";

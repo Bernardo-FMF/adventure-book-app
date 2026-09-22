@@ -37,6 +37,9 @@ public class BookService {
      * <p>
      * The transaction has to span the mapping due to the lazy loaded tags, which are read when the books are mapped, so we
      * need an open session.
+     * Also by setting the method as transactional, we'll be opening a session for the entire method. If not for this,
+     * each call to the JPA repository would create its own transaction. By default, the repository has a REQUIRED propagation
+     * so it will join the outer transaction that this method creates.
      * It uses a readOnly transaction, because the operation itself is read only.
      * With this configuration:
      * 1. Hibernate will skip dirty checking and won't perform a flush. This means that Hibernate won't keep a snapshot
@@ -64,6 +67,14 @@ public class BookService {
         );
     }
 
+    /**
+     * Reports information related to the current catalog of books: how many books exist, and which genres and difficulties
+     * are actually in use.
+     * <p>
+     * For each piece of information we'll perform a query, so it amounts to three queries in total.
+     *
+     * @return the book count and the genre and difficulty values present in the catalogue.
+     */
     @Transactional(readOnly = true)
     public MetadataDto getMetadata() {
         long count = bookRepository.count();
