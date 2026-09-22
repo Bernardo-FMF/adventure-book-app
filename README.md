@@ -79,6 +79,14 @@ mvn spring-boot:run
 
 This will start the API on http://localhost:8081.
 
+Alternatively, build the project and run the packaged jar.
+To run the jar this way, you'll need to set the env vars (DB_URL, DB_USER, DB_PASSWORD, PORT (optional)) on your system.
+
+```bash
+mvn clean package
+java -jar target/backend-0.0.1-SNAPSHOT.jar
+```
+
 #### Frontend
 
 Then to start the frontend:
