@@ -133,6 +133,8 @@ public class BookEntity {
      * 1. The proxy will be a subclass generated at runtime, so comparing the book proxy to the book class would fail.
      * 2. Using Hibernate.getClass() would give the correct class, but it would load the row, so there would be a query
      * inside the equals.
+     * <p>
+     * Source: https://jpa-buddy.com/blog/hopefully-the-final-article-about-equals-and-hashcode-for-jpa-entities-with-db-generated-ids/
      */
     @Override
     public final boolean equals(Object o) {
