@@ -69,10 +69,18 @@ export class BooksPage {
   protected readonly difficulties = signal<Difficulty[]>([]);
 
   // How book state changes are identified
+  // We'll use subjects instead of signals, because with signals we aren't able to express debouncing and cancellation.
+  // The search functionality will make multiple requests depending on user input, so a request that has an old search term
+  // has to be canceled so that slow responses don't overwrite the newer state.
   private readonly pageRequests = new Subject<number>();
   private readonly searchInput = new Subject<string>();
 
   constructor() {
+    // Divided the searches and regular paginated loading into two separate sources.
+    // The search loading uses a debounce time so that we don't make a request for every input the user makes.
+    // The term is trimmed so that requests are only made for distinct values, so 'xpto' and 'xpto ' are the same search term
+    // and a new request will not be made.
+    // An input change means that the search term is different, se we reset the page to 0.
     const searches = this.searchInput.pipe(
       debounceTime(SEARCH_DEBOUNCE_MS),
       map((term) => term.trim()),
@@ -83,8 +91,18 @@ export class BooksPage {
       }),
     );
 
+    //This is used for hte regular paginated loading and also the filter chips.
+    // The two sources are differentiated because reusing them meant that we'd be debouncing on the regular loading.
     const pages = this.pageRequests.pipe(tap((page) => this.page.set(page)));
 
+    // We can merge both pipes because besides the debouncing, they have the same logic: Fetch the books using the
+    // defined page and filters.
+    // SwitchMap is used because it starts the request and can cancel the request as later requests arrive, meaning we're
+    // safe from overwriting the latest requests response with an earlier response that was slow to reach the client.
+    // The api response is piped so that inner errors don't reach the other stream. If that happened, the stream would end
+    // and the page would stop responding.
+    // When the component is destroyed, it's possible to have ongoing requests, so we unsubscribe the pipe to avoid having
+    // responses reach a dead component.
     merge(searches, pages)
       .pipe(
         tap(() => {
@@ -162,6 +180,11 @@ export class BooksPage {
 
     this.loadingGameStartOp.set(book.id);
 
+    // If we have a valid response to the start request, we'll store it in the active games cache without refetching.
+    // This keeps the client consistent without making extra requests, but having multiple tabs open will show inconsistencies,
+    // since this cache storage won't be present in the other tab.
+    // A 409 error means that the game already exists for the player. However, we don't know the id of the game, so we
+    // refetch to make sure the active games list is up to date.
     this.gameApi.start(book.id).subscribe({
       next: (game) => {
         this.activeGames.remember({ gameId: game.id, bookId: book.id });
@@ -169,9 +192,6 @@ export class BooksPage {
       },
       error: (error: HttpErrorResponse) => {
         if (error.status === 409) {
-          // The game exists already; refreshing the listing is what turns the card into "Continue". Subscribing to
-          // load() rather than calling fetch() means a failed refresh says so, instead of leaving a button that
-          // silently does nothing however often it is pressed.
           this.activeGames.load().subscribe({
             next: () => this.loadingGameStartOp.set(null),
             error: (failure: unknown) => {
